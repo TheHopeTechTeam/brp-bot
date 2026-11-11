@@ -16,6 +16,19 @@ export const Layout: FC<LayoutProps> = ({ title, children, customScript = '' }) 
         />
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          main.daily-devotion {
+            width: 100%;
+            max-width: 28rem;
+            box-sizing: border-box;
+            margin-inline: auto;
+          }
+          @media (max-width: 600px) {
+            main.daily-devotion {
+              width: calc(100vw - 5rem);
+            }
+          }
+        </style>
         <script defer src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
       </head>
       <body>
@@ -28,10 +41,20 @@ export type PlanPageProps = {
   customScript?: string | undefined;
 };
 
-const repentencePrelude = [
-  '聖靈，求祢今日光照我的生命。',
-  '顯明那些祢命定我去行，我卻尚未行的事；',
-  '也顯明那些祢不喜悅，我卻仍執意去行的事。',
+const SectionGuide: FC<{ children: string }> = ({ children }) => (
+  <p class="rounded-xl bg-[#1D292E] text-white ml-2 px-4 py-2 text-sm leading-6">{children}</p>
+);
+
+const DevotionalLabel: FC<{ children: string }> = ({ children }) => (
+  <h4 class="ml-2 font-bold text-[#1D292E]">{children}｜</h4>
+);
+
+const repentencePrelude =
+  '聖靈，求祢今日光照我的生命。顯明那些祢命定我去行，我卻尚未行的事；也顯明那些祢不喜悅，我卻仍執意去行的事。';
+
+const devotionalReflectionPrompts = [
+  '1. 今天我看到神是＿＿＿＿的神；因著知道祂是這樣的一位神，我可以放手勇敢面對我目前＿＿＿＿的處境。',
+  '2. 因著對神的認識，今天我願意在＿＿＿＿事上展開＿＿＿＿改變的行動。',
 ];
 
 const holyWeekVideos: Record<string, string | undefined> = {
@@ -63,16 +86,24 @@ export const PlanPage: FC<PlanPageProps> = ({ plan, customScript }) => {
     position: SubsectionBlockData['position'],
   ) =>
     plan.subsectionBlocks
-      .filter((block) => block.section === section && block.position === position)
+      .filter(
+        (block) =>
+          block.section === section &&
+          block.position === position &&
+          !(section === 'prayer' && block.title?.trim() === '為教會禱告'),
+      )
       .map((block, index) => (
-        <SubsectionBlock key={`${block.section}-${block.position}-${block.sortOrder}-${index}`} {...block} />
+        <SubsectionBlock
+          key={`${block.section}-${block.position}-${block.sortOrder}-${index}`}
+          {...block}
+        />
       ));
 
   return (
-    <Layout title={`好好靈修 Daily Devotion - ${plan.date}`} customScript={customScript}>
-      <main class="max-w-md mx-2 md:mx-auto p-4 bg-[#FEFEFE] rounded-xl shadow-md text-[#5D5D5D]">
+    <Layout title={`好好靈修 - ${plan.date}`} customScript={customScript}>
+      <main class="daily-devotion p-4 bg-[#FEFEFE] rounded-xl shadow-md text-[#5D5D5D]">
         <h1 class="bg-[#FFCC32] font-bold text-[#1D292E] text-2xl pl-4 py-4 rounded-lg mb-3">
-          好好靈修 Daily Devotion
+          好好靈修
         </h1>
 
         {holyWeekVideo && (
@@ -89,38 +120,59 @@ export const PlanPage: FC<PlanPageProps> = ({ plan, customScript }) => {
           </section>
         )}
 
-        <article class="space-y-6 text-md leading-8">
+        <article class="text-md leading-8">
+          <h2 class="text-lg mb-3">{[date, dayOfWeek].join(' ')}</h2>
           <div class="bg-[#EEF0F4] rounded-lg px-4 py-4">
-            <h2 class="text-lg mb-4">{[date, dayOfWeek].join(' ')}</h2>
-            <section class="mb-6 flex">
-              <h3 class="font-bold text-[#1D292E] text-xl text-center">讚美</h3>
+            <section
+              class="mb-6"
+              style={{ display: 'grid', gridTemplateColumns: '2rem 0.75rem minmax(0, 1fr)' }}
+            >
+              <h3
+                class="font-bold text-[#1D292E] text-xl text-center"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                讚美
+              </h3>
               <div class="flex flex-col items-center space-y-1">
                 <span class="flex-none rounded-full bg-[#1D292E] w-3 h-3"></span>
                 <span class="rounded-lg bg-[#1D292E] w-0.75 h-full"></span>
               </div>
-              <div class="w-full space-y-2">
+              <div class="min-w-0 space-y-2">
+                <SectionGuide>
+                  閱讀當天讚美金句，將經文中的真理直接化為向神的讚美禱詞。
+                </SectionGuide>
                 {renderBlocks('praise', 'before_content')}
                 <div class="pb-2 pl-6 font-bold">
                   <p>{plan.praise.content}</p>
                   <p>{plan.praise.scope}</p>
+                  <p>
+                    主啊！從今天的經文中我看到祢是一位＿＿＿＿的神；今天我要因著祢的這個屬性來讚美祢！
+                  </p>
                 </div>
                 {renderBlocks('praise', 'after_content')}
               </div>
             </section>
 
-            <section class="mb-6 flex">
-              <h3 class="font-bold text-[#1D292E] text-xl text-center">悔改</h3>
+            <section
+              class="mb-6"
+              style={{ display: 'grid', gridTemplateColumns: '2rem 0.75rem minmax(0, 1fr)' }}
+            >
+              <h3
+                class="font-bold text-[#1D292E] text-xl text-center"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                悔改
+              </h3>
               <div class="flex flex-col items-center space-y-1">
                 <span class="flex-none rounded-full bg-[#1D292E] w-3 h-3"></span>
                 <span class="rounded-lg bg-[#1D292E] w-0.75 h-full"></span>
               </div>
-              <div class="w-full space-y-2">
+              <div class="min-w-0 space-y-2">
+                <SectionGuide>
+                  祈求聖靈光照生命，誠實誠懇地向神承認過犯，並決定靠主做出改變。
+                </SectionGuide>
                 {renderBlocks('repentance', 'before_content')}
-                <div class="rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2">
-                  {repentencePrelude.map((paragraph) => (
-                    <p>{paragraph}</p>
-                  ))}
-                </div>
+                <p class="ml-2 px-4 py-2">{repentencePrelude}</p>
                 <div class="pb-2 pl-6">
                   {plan.repentence.split('\n').map((paragraph) => (
                     <p>{paragraph}</p>
@@ -130,13 +182,24 @@ export const PlanPage: FC<PlanPageProps> = ({ plan, customScript }) => {
               </div>
             </section>
 
-            <section class="mb-6 flex">
-              <h3 class="font-bold text-[#1D292E] text-xl text-center">反思</h3>
+            <section
+              class="mb-6"
+              style={{ display: 'grid', gridTemplateColumns: '2rem 0.75rem minmax(0, 1fr)' }}
+            >
+              <h3
+                class="font-bold text-[#1D292E] text-xl text-center"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                讀經與反思
+              </h3>
               <div class="flex flex-col items-center space-y-1">
                 <span class="flex-none rounded-full bg-[#1D292E] w-3 h-3"></span>
                 <span class="rounded-lg bg-[#1D292E] w-0.75 h-full"></span>
               </div>
-              <div class="w-full space-y-2">
+              <div class="min-w-0 space-y-2">
+                <SectionGuide>
+                  仔細閱讀今日經文，從中認識神的屬性與作為，並轉化為面對處境的新眼光與外展行動。
+                </SectionGuide>
                 {/* TODO: Put 聖週靈修好好閱讀 link from 2026-03-29 thru 2026-04-05 as href here */}
                 {/* start: block that only shows from 2026-03-29 thru 2026-04-05 */}
                 {/* <div class="pl-2"> */}
@@ -151,29 +214,42 @@ export const PlanPage: FC<PlanPageProps> = ({ plan, customScript }) => {
                 {/* </div> */}
                 {/* end: block that only shows from 2026-03-29 thru 2026-04-05 */}
 
+                <DevotionalLabel>今日進度</DevotionalLabel>
                 {renderBlocks('devotional', 'before_content')}
-
                 {plan.devotional.scope.map((scope, index) => (
                   <ScopeWithLink key={scope} scope={scope} link={plan.devotional.link[index]} />
                 ))}
-                <div class="rounded-2xl bg-[#1D292E] text-white ml-2 mb-2 px-4 py-2">
-                  {plan.devotional.content.map((paragraph) => (
+                <DevotionalLabel>靈修反思</DevotionalLabel>
+                <div class="ml-2 px-4 py-2">
+                  {devotionalReflectionPrompts.map((paragraph) => (
                     <p>{paragraph}</p>
                   ))}
                 </div>
                 {renderBlocks('devotional', 'after_content')}
+                <div class="py-2">
+                  <DevotionalLabel>Baptize One More 行動反思</DevotionalLabel>
+                  <p class="ml-2">今天我能以＿＿＿＿的行動，將耶穌帶給＿＿＿＿。</p>
+                </div>
               </div>
             </section>
 
-            <section class="flex">
-              <h3 class="font-bold text-[#1D292E] text-xl text-center">祈禱</h3>
+            <section
+              style={{ display: 'grid', gridTemplateColumns: '2rem 0.75rem minmax(0, 1fr)' }}
+            >
+              <h3
+                class="font-bold text-[#1D292E] text-xl text-center"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                祈禱
+              </h3>
               <div class="flex flex-col items-center space-y-1">
                 <span class="flex-none rounded-full bg-[#1D292E] w-3 h-3"></span>
                 <span class="rounded-lg bg-[#1D292E] w-0.75 h-full"></span>
               </div>
-              <div class="w-full space-y-2">
+              <div class="min-w-0 space-y-2">
+                <SectionGuide>將個人的需要交託給神，並以主禱文宣告神國度的掌權。</SectionGuide>
                 {renderBlocks('prayer', 'before_content')}
-                <p class="rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2">{preludePrayer}</p>
+                <p class="ml-2 px-4 py-2">{preludePrayer}</p>
                 <div class="pb-2 pl-6">
                   {theLordPrayer.map((paragraph) => (
                     <p>{paragraph}</p>
@@ -191,14 +267,13 @@ export const PlanPage: FC<PlanPageProps> = ({ plan, customScript }) => {
 
 const ScopeWithLink = ({ scope, link }: { scope: string; link: string }) => (
   <div class="pl-2">
-    <p class="font-bold text-xl">{scope}</p>
     <a
       href={link}
-      class="text-blue-500 hover:underline text-md block my-2"
+      class="block my-2 text-base font-medium text-[#5D5D5D] underline hover:text-[#1D292E]"
       target="_blank"
       rel="noopener noreferrer"
     >
-      YouVersion 連結
+      {scope}
     </a>
   </div>
 );
@@ -214,7 +289,7 @@ const SubsectionBlock = ({
   scriptureScope?: string;
   content: string;
 }) => (
-  <div class="space-y-2 rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2">
+  <div class="ml-2 px-4 py-2">
     {title && <p class="font-bold text-xl">{title}</p>}
     {(scriptureContent || scriptureScope) && (
       <p>{[scriptureContent, scriptureScope].filter(Boolean).join(' ')}</p>

@@ -65,13 +65,11 @@ describe('GET /api/v1/plan', () => {
     const body = await response.text();
 
     expect(body).toContain('樂意撒種，經歷神敞開天窗的豐盛祝福。');
-    expect(body).toContain('為教會禱告');
-    expect(body).toContain('<p>「凡敬畏神的人，你們都來聽！」 詩篇 66:16</p>');
-    expect(body).toContain('為 FORWARD 奉獻預備自己的心。');
+    expect(body).not.toContain('為教會禱告');
+    expect(body).not.toContain('<p>「凡敬畏神的人，你們都來聽！」 詩篇 66:16</p>');
+    expect(body).not.toContain('為 FORWARD 奉獻預備自己的心。');
 
-    expect(body).toContain(
-      '<div class="space-y-2 rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2"><div><p>樂意撒種，經歷神敞開天窗的豐盛祝福。</p></div></div>',
-    );
+    expect(body).not.toContain('space-y-2 rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2');
     expect(body.indexOf('樂意撒種，經歷神敞開天窗的豐盛祝福。')).toBeLessThan(
       body.indexOf('出埃及記 第 8 章'),
     );
@@ -112,9 +110,8 @@ describe('GET /api/v1/plan', () => {
     expect(position('prayer-before')).toBeLessThan(position('神啊！我將我的 ___'));
     expect(position('神啊！我將我的 ___')).toBeLessThan(position('prayer-after'));
 
-    expect(body).toContain(
-      '<div class="w-full space-y-2"><div class="space-y-2 rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2"><div><p>praise-before</p></div></div>',
-    );
+    expect(body).toContain('閱讀當天讚美金句');
+    expect(position('Baptize One More 行動反思')).toBeGreaterThan(position('devotional-after'));
   });
   it('responds 404, when no plan found', async () => {
     const response = await SELF.fetch(`${stubDomain}/api/v1/plan?date=2024-12-31`);
