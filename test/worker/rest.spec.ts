@@ -37,7 +37,7 @@ describe('GET /api/v1/plan', () => {
     expect(await response.text()).toMatchSnapshot();
   });
 
-  it('renders normalized reading and prayer blocks in their requested order', async () => {
+  it('hides devotional progress blocks and normalizes prayer blocks', async () => {
     await env.DB.prepare(
       `
         INSERT INTO subsection_blocks (date, section, position, title, scripture_content, scripture_scope, content, sort_order)
@@ -64,15 +64,13 @@ describe('GET /api/v1/plan', () => {
     const response = await SELF.fetch(`${stubDomain}/api/v1/plan?date=2025-01-01&format=html`);
     const body = await response.text();
 
-    expect(body).toContain('樂意撒種，經歷神敞開天窗的豐盛祝福。');
+    expect(body).not.toContain('樂意撒種，經歷神敞開天窗的豐盛祝福。');
+    expect(body).toContain('出埃及記 第 8 章');
     expect(body).not.toContain('為教會禱告');
     expect(body).not.toContain('<p>「凡敬畏神的人，你們都來聽！」 詩篇 66:16</p>');
     expect(body).not.toContain('為 FORWARD 奉獻預備自己的心。');
 
     expect(body).not.toContain('space-y-2 rounded-2xl bg-[#1D292E] text-white ml-2 px-4 py-2');
-    expect(body.indexOf('樂意撒種，經歷神敞開天窗的豐盛祝福。')).toBeLessThan(
-      body.indexOf('出埃及記 第 8 章'),
-    );
   });
 
   it('renders every subsection slot around its section content', async () => {
@@ -98,14 +96,16 @@ describe('GET /api/v1/plan', () => {
     const body = await response.text();
     const position = (content: string) => body.indexOf(content);
 
-    for (const content of slots.map(([, , content]) => content)) {
+    for (const content of slots
+      .map(([, , content]) => content)
+      .filter((x) => x !== 'devotional-before')) {
       expect(position(content)).toBeGreaterThanOrEqual(0);
     }
     expect(position('praise-before')).toBeLessThan(position('你們要稱謝耶和華'));
     expect(position('你們要稱謝耶和華')).toBeLessThan(position('praise-after'));
     expect(position('repentance-before')).toBeLessThan(position('聖靈，求祢今日光照我的生命。'));
     expect(position('聖靈，求祢今日光照我的生命。')).toBeLessThan(position('repentance-after'));
-    expect(position('devotional-before')).toBeLessThan(position('出埃及記 第 8 章'));
+    expect(position('devotional-before')).toBe(-1);
     expect(position('出埃及記 第 8 章')).toBeLessThan(position('devotional-after'));
     expect(position('prayer-before')).toBeLessThan(position('神啊！我將我的 ___'));
     expect(position('神啊！我將我的 ___')).toBeLessThan(position('prayer-after'));

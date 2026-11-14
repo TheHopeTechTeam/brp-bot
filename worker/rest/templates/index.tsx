@@ -215,7 +215,6 @@ export const PlanPage: FC<PlanPageProps> = ({ plan, customScript }) => {
                 {/* end: block that only shows from 2026-03-29 thru 2026-04-05 */}
 
                 <DevotionalLabel>今日進度</DevotionalLabel>
-                {renderBlocks('devotional', 'before_content')}
                 {plan.devotional.scope.map((scope, index) => (
                   <ScopeWithLink key={scope} scope={scope} link={plan.devotional.link[index]} />
                 ))}
